@@ -16,7 +16,7 @@ export default function UploadSection({ email }: { email: string }) {
     try {
       const response = await fetch(
         "http://localhost:8000/upload_pdf", // local
-        // "https://TUO-BACKEND-RENDER-URL/upload_pdf",
+        // "https://rag-app-2s6e.onrender.com/upload_pdf",
         {
           method: "POST",
           body: formData,

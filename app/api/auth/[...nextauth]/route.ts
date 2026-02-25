@@ -31,6 +31,7 @@
 // Google richiama l’endpoint della tua Next.js app:
 
 // http://localhost:3000/api/auth/callback/google
+// (quando fai l'host su render devi handare su gcp e dare questo url: https://rag-app-frontend-2ose.onrender.com)
 
 // ⚠️ Questo è un endpoint Next.js, NON FastAPI.
 // NextAuth gestisce tutto internamente: riceve il callback, scambia il code per token, genera JWT lato frontend.
@@ -40,7 +41,9 @@
 // Quando chiami il tuo backend FastAPI (/upload_pdf, /chat), invii il token JWT di NextAuth (dal cookie o header Authorization).
 
 import NextAuth from "next-auth"; //lato server (non nel browser!),
+import { encode } from "next-auth/jwt";
 import GoogleProvider from "next-auth/providers/google";
+import jwt from "jsonwebtoken";
 
 const handler = NextAuth({
   providers: [
@@ -51,10 +54,42 @@ const handler = NextAuth({
   ],
   session: {
     // potrai vedere il token in DevTools → Application → Storage → Cookies → localhost (next-auth.session-token = Jwt token value here )
-    strategy: "jwt",
+    strategy: "jwt", // NextAuth crea un JWT (name, email, sub...) firmato con NEXTAUTH_SECRET sotto
     maxAge: 7 * 24 * 60 * 60, // 1 settimana di durata token, dopodiche redirect to login.
     // Se l’utente è attivo, NextAuth può comunque “refresharlo”
+  }, // questa e' il jwt creato da nextauth che serve a validare la sessione dello user, in modo che questo
+  // possa visitare le pagine entro le diverse pagine di questa next.js app
+
+  // qui creiamo il jwt personalizzato compatibile con il verify 'jose' del nostro backend FastAPI.
+  // Perche quando comunichiamo con un backen, dobbiamo mandare comunque il toke, per garanzia che
+  // siamo autrnticati e possiamo comunicare in sicurezza con esso.
+  // Dobbiamo creare il manualmente perche quello creato da next auth e' gia' 'cifrato', e quindi non
+  // puo' essere letto e' validato da 'jose' nel backend perche nel backend ci aspettiamo un jwt token
+  // puro (algorithms=["HS256"]), mentre quello validato da nextAuth e' gia cifrato ,
+  // quindi illegibile per 'jose'. Quindi in breve qui generiamo un JWT standard HS256 per il backend
+  callbacks: {
+    async jwt({ token }) {
+      console.log("frontend env.key = ", process.env.BACKEND_JWT_SECRET!);
+      // jwt e' il key di jwt defined in strategy sopra che contiene le info sullo user(il token)
+      // ora lo trasformiamo in formato in alg: ["HS256"] compatibile col backend
+      const backendToken = jwt.sign(
+        // questo e jsonwebtoken, non piu' jwt di nextauth
+        { email: token.email, sub: token.sub },
+        process.env.BACKEND_JWT_SECRET!,
+        { expiresIn: "1h" },
+      );
+      token.backendAccessToken = backendToken;
+      return token;
+    },
+
+    async session({ session, token }) {
+      // 🔥 QUI rendiamo il JWT disponibile nel frontend per poterlo mandare al backend con  "Authorization: `Bearer ${token}`""
+      // il token deve essere una stringa (encode) per poter essere verificato nel backend
+      session.backendAccessToken = token.backendAccessToken as string;
+      return session;
+    },
   },
+
   secret: process.env.NEXTAUTH_SECRET, // dopo l'handshake con google, NextAuth crea in automatico il proprio JWT token
   // che viene salvato in un cookie HTTP-only. HTTP-only significa che JavaScript nel browser NON può leggerlo
   // e che viene inviato automaticamente al server ad ogni richiesta. I dati nel token sono: name, email, picture...

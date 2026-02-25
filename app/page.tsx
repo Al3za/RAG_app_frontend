@@ -3,9 +3,11 @@
 // import { useState } from "react";
 import { useSession, signIn } from "next-auth/react";
 import UploadSection from "./upload";
+import Test_email_jwt from "./teste_jwt";
 
 export default function Home() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession(); // cheks if session is not expired or exist
+  // useSession() NextAuth decifra il token per te.
 
   if (status === "loading") {
     return <p>Loading...</p>;
@@ -25,7 +27,11 @@ export default function Home() {
     );
   }
 
-  return <UploadSection email={session.user?.email || ""} />;
+  // const token = session.user;
+
+  // return <UploadSection email={session.user?.email || ""} />; // workink for upload
+  // return <Test_email_jwt email={session.user?.email || ""} />;
+  return <Test_email_jwt />;
 }
 
 // export default function Home() {
