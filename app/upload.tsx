@@ -1,16 +1,19 @@
 import { useState } from "react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
-export default function UploadSection({ email }: { email: string }) {
+export default function UploadSection() {
   const [file, setFile] = useState<File | null>(null); // The File interface provides information
   // about files and allows JavaScript in a web page to access their content.
   const [message, setMessage] = useState("");
+  const { data: session } = useSession();
+  const email = session?.user?.email || "";
 
   const handleUpload = async () => {
     if (!file) return;
 
+    const token = session?.backendAccessToken || "";
+
     const formData = new FormData();
-    formData.append("user_id", email);
     formData.append("file", file);
 
     try {
@@ -20,6 +23,11 @@ export default function UploadSection({ email }: { email: string }) {
         {
           method: "POST",
           body: formData,
+          headers: {
+            // il browser attiva automaticamente una CORS preflight request. (Quindi devi abilitare coors al backend)
+            Authorization: `Bearer ${token}`, // Token deve essere in string type, non object ({email:.., name:...) per
+            // essere validata dal nostro backend
+          },
         },
       );
 

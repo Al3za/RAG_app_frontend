@@ -13,6 +13,7 @@ export default function Home() {
     return <p>Loading...</p>;
   }
 
+  // if session expired or user not logged in
   if (!session) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -29,9 +30,9 @@ export default function Home() {
 
   // const token = session.user;
 
-  // return <UploadSection email={session.user?.email || ""} />; // workink for upload
+  return <UploadSection />; // workink for upload
   // return <Test_email_jwt email={session.user?.email || ""} />;
-  return <Test_email_jwt />;
+  // return <Test_email_jwt />;
 }
 
 // export default function Home() {
