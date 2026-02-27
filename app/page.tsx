@@ -3,7 +3,8 @@
 // import { useState } from "react";
 import { useSession, signIn } from "next-auth/react";
 import UploadSection from "./upload";
-import Test_email_jwt from "./teste_jwt";
+// import Test_email_jwt from "./teste_jwt";
+// import QuestionPage from "./chat";
 
 export default function Home() {
   const { data: session, status } = useSession(); // cheks if session is not expired or exist
@@ -31,8 +32,8 @@ export default function Home() {
   // const token = session.user;
 
   return <UploadSection />; // workink for upload
-  // return <Test_email_jwt email={session.user?.email || ""} />;
   // return <Test_email_jwt />;
+  // return <QuestionPage />;
 }
 
 // export default function Home() {
