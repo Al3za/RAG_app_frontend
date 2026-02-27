@@ -1,4 +1,5 @@
-// 4️⃣ Configurazione NextAuth. (api/auth/[...nextauth]/route.ts  è un endpoint server ed e' il path  giusto per NextAuth)
+// 4️⃣ Configurazione NextAuth.
+// api/auth/[...nextauth]/route.ts è un custom endpoint server di NextAuth
 
 //1) app/api/... → crea API route lato server. Non è frontend, È codice che gira solo sul server (quindi e' sicuro creare jwt token qui)
 
@@ -69,11 +70,12 @@ const handler = NextAuth({
   // quindi illegibile per 'jose'. Quindi in breve qui generiamo un JWT standard HS256 per il backend
   callbacks: {
     async jwt({ token }) {
-      console.log("frontend env.key = ", process.env.BACKEND_JWT_SECRET!);
+      // console.log("frontend env.key = ", process.env.BACKEND_JWT_SECRET!);
       // jwt e' il key di jwt defined in strategy sopra che contiene le info sullo user(il token)
       // ora lo trasformiamo in formato in alg: ["HS256"] compatibile col backend
       const backendToken = jwt.sign(
-        // questo e jsonwebtoken, non piu' jwt di nextauth
+        // questo e jsonwebtoken, non piu' jwt di nextauth. Quindi il token del backend e' diverso di
+        // quello del frontend creato da nextAuth
         { email: token.email, sub: token.sub },
         process.env.BACKEND_JWT_SECRET!,
         { expiresIn: "1h" },

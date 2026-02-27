@@ -1,0 +1,110 @@
+"use client"; // questa e' di default quado usiamo usestate o useRouter in una pagina next.
+// vuol dire che non sono server side page, ma generate dal browser con funzionalita js(interative buttons ecc...)
+
+import { useState, useEffect } from "react";
+import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+// import { json } from "stream/consumers";
+
+export default function QuestionPage() {
+  const [allowed, setAllowed] = useState(false);
+  const [message, setMessage] = useState("");
+  const [question, setQuestion] = useState("");
+  const { data: session, status } = useSession(); // asyncron Google function. When lo stato e' attivo
+  // verra si attiva lo useState
+  const router = useRouter();
+
+  // se un utente cerca di andare su questa route prima che il pdf sia stato 'ingerito', lo rimandiamo indietro
+  // su upload page
+  useEffect(() => {
+    if (status === "loading") return;
+
+    if (!session?.backendAccessToken) {
+      // if no logged in redirect to home page
+      router.push("/"); // i router change meglio dentro useEffect, da evitare nel render della pagina
+      return; // UseEffect viene chiamato dopo che la pagina e' stata renderizzata, ed e meglio fare eventuali
+      // route changes tra pagine dopo che avviene la renderizzazione della pagina (appunto dentro useEffect)
+    }
+    const checkStatus = async () => {
+      const token = session?.backendAccessToken || "";
+
+      try {
+        const res = await fetch("http://localhost:8000/ingestion_status", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const ingest_status_data = await res.json();
+
+        if (ingest_status_data.status === "ready") {
+          setAllowed(true);
+        } else {
+          router.push("/"); // home page where we upload again
+        }
+      } catch (error) {
+        // alert(`server may down, error = ${error}`);
+        console.error(error);
+        router.push("/");
+      }
+    };
+    checkStatus(); // start status polling
+  }, [status, session, router]); /*[status, session]*/ // status, session sono funzioni asyncrone di google. Quando queste verranno lette
+  // in questo file, allora si avvia useEffect e' vede se l'utente e loggato in e se il pdf e' stato ingerito
+  // prima di ancare avanto con Il questionPage file e poter interagire con LLM
+
+  if (!allowed) {
+    // if pdf_ingest_status != 'ready'
+    return <div>Checking document status... </div>;
+  }
+
+  const handle_LLM_response = async () => {
+    // const email = session?.user?.email || "";
+    const token = session?.backendAccessToken || ""; // custom backend token (per il nostro backend)
+    // console.log("question here = ", question);
+    try {
+      const response = await fetch("http://localhost:8000/chat", {
+        method: "POST",
+        body: JSON.stringify({
+          question: question,
+        }),
+        headers: {
+          // il browser attiva automaticamente una CORS preflight request. (Quindi devi abilitare coors al backend)
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Token deve essere in string type, non object ({email:.., name:...) per
+          // essere validata dal nostro backend
+        },
+      });
+
+      const data = await response.json();
+      setMessage(data.answer || "transfere completed");
+    } catch (error) {
+      setMessage("Error message ");
+    }
+  };
+
+  return (
+    <div className="p-10 space-y-4">
+      <h2>Welcome till Chat page {/*{email}*/} </h2>
+      <input
+        type="text"
+        value={question}
+        onChange={(e) => {
+          setQuestion(e.target.value);
+        }}
+      />
+      <button
+        className="bg-blue-500 text-white px-4 py-2"
+        onClick={handle_LLM_response}
+      >
+        send question
+      </button>
+      <button
+        className="bg-gray-500 text-white px-4 py-2"
+        onClick={() => signOut()}
+      >
+        Logout
+      </button>
+      {message && <p>{message}</p>}
+      {/* {question} */}
+    </div>
+  );
+}
