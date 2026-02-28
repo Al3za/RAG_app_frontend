@@ -4,6 +4,9 @@
 import { useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import styles from "../css/Ask.module.css";
+// import styles from "./css/Ask.module.css";
+// import styles from "./Ask.module.css";
 // import { json } from "stream/consumers";
 
 export default function QuestionPage() {
@@ -80,31 +83,59 @@ export default function QuestionPage() {
       setMessage("Error message ");
     }
   };
-
   return (
-    <div className="p-10 space-y-4">
-      <h2>Welcome till Chat page {/*{email}*/} </h2>
-      <input
-        type="text"
-        value={question}
-        onChange={(e) => {
-          setQuestion(e.target.value);
-        }}
-      />
-      <button
-        className="bg-blue-500 text-white px-4 py-2"
-        onClick={handle_LLM_response}
-      >
-        send question
-      </button>
-      <button
-        className="bg-gray-500 text-white px-4 py-2"
-        onClick={() => signOut()}
-      >
-        Logout
-      </button>
-      {message && <p>{message}</p>}
-      {/* {question} */}
+    <div className={styles.page}>
+      <div className={styles.card}>
+        <input
+          className={styles.input}
+          type="text"
+          placeholder="Ask something..."
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+        />
+
+        <div className={styles.buttonsRow}>
+          <button
+            className={styles.buttonPrimary}
+            onClick={handle_LLM_response}
+          >
+            Send Question
+          </button>
+
+          <button className={styles.buttonSecondary} onClick={() => signOut()}>
+            Logout
+          </button>
+        </div>
+
+        {message && <div className={styles.responseBox}>{message}</div>}
+      </div>
     </div>
   );
 }
+// return (
+//   <div className="p-10 space-y-4">
+//     <h2>Welcome till Chat page {/*{email}*/} </h2>
+//     <input
+//       type="text"
+//       value={question}
+//       onChange={(e) => {
+//         setQuestion(e.target.value);
+//       }}
+//     />
+//     <button
+//       className="bg-blue-500 text-white px-4 py-2"
+//       onClick={handle_LLM_response}
+//     >
+//       send question
+//     </button>
+//     <button
+//       className="bg-gray-500 text-white px-4 py-2"
+//       onClick={() => signOut()}
+//     >
+//       Logout
+//     </button>
+//     {message && <p>{message}</p>}
+//     {/* {question} */}
+//   </div>
+// );
+// }
