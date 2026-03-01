@@ -42,7 +42,7 @@
 // Quando chiami il tuo backend FastAPI (/upload_pdf, /chat), invii il token JWT di NextAuth (dal cookie o header Authorization).
 
 import NextAuth from "next-auth"; //lato server (non nel browser!),
-import { encode } from "next-auth/jwt";
+// import { encode } from "next-auth/jwt";
 import GoogleProvider from "next-auth/providers/google";
 import jwt from "jsonwebtoken";
 
