@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import styles from "./css/upload.module.css";
 // import router from "next/router";
@@ -7,21 +7,88 @@ import { useRouter } from "next/navigation";
 export default function UploadSection() {
   const [file, setFile] = useState<File | null>(null); // The File interface provides information
   // about files and allows JavaScript in a web page to access their content.
+  const [loading, setLoading] = useState(false);
+  // const [attempts, setAttempts] = useState(0);
   const [message, setMessage] = useState("");
   const router = useRouter();
   const { data: session } = useSession();
   const email = session?.user?.email || ""; // serve al fronten per "Hallo akekacabro@gmail.com". (Al backend bisogna inviare solo il token
   // per ottenere l'email dopo encoding)
+  const token = session?.backendAccessToken || "";
+
+  // useEffect parte solo dopo che la pagina e' stata renderizzata e quando cambia 'loading'.
+  useEffect(() => {
+    // Più pulito.
+    // Più controllabile.
+    // Nessun rischio di loop infinito nascosto
+    if (!loading) return;
+
+    let attempts = 0;
+    const MAX_ATTEMPTS = 180; // 5 min  //60; // 2 minuti
+
+    const ingestion_status_interval = setInterval(async () => {
+      console.log("attempts here =", attempts);
+      attempts++;
+      if (attempts > MAX_ATTEMPTS) {
+        clearInterval(ingestion_status_interval);
+        setLoading(false);
+        setMessage("Processing timeout. Please retry.");
+        return;
+      }
+
+      try {
+        // polling to check the status of the ingestion
+        const res = await fetch("http://localhost:8000/ingestion_status", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+
+        if (data.status === "ready") {
+          clearInterval(ingestion_status_interval); // loops stops
+          router.push("/questions"); // go to question page
+        }
+
+        if (data.status === "processing") {
+          // setAttempts((prev) => prev + 1);
+          setMessage(
+            // change loading message
+            `Processing PDF, please wait${" .".repeat((attempts % 3) + 1)}`,
+          );
+        }
+        if (data.status === "error") {
+          // it can fall in the catch error
+          clearInterval(ingestion_status_interval); // blocca il loop
+          setMessage("");
+          setLoading(false);
+          alert("Error in pdf ingestion, refresh the page and retry please");
+        }
+      } catch (err) {
+        // catch error del fetch
+        clearInterval(ingestion_status_interval);
+        alert(`server may down, error = ${err}`);
+        setLoading(false);
+        setMessage("");
+      }
+    }, 2000); // ogni 2 sec riparte il loop
+
+    return () => clearInterval(ingestion_status_interval);
+  }, [loading]); // il loop parte quando loading state cambia (true/false)
 
   const handleUpload = async () => {
-    if (!file) return;
+    // const Iter_message = [
+    //   // iterative message for the user once he upload pdf
+    //   "Processing PDF, please wait .",
+    //   "Processing PDF, please wait ..",
+    //   "Processing PDF, please wait ...",
+    // ];
+
+    if (!file) return alert("Choose a valid pdf file");
     // const router = useRouter(); // questo e' un react hook. puo essere chiamato solo dentro il corpo del componente madre, e mai dentro
     // funzioni normali, if statement, loop...
-
     setMessage(
       "Processing PDF, please wait..." /*data.message || "Upload completed"*/,
     );
-    const token = session?.backendAccessToken || ""; // questo e' il token dedicato al backend che serve
+    // const token = session?.backendAccessToken || ""; // questo e' il token dedicato al backend che serve
     // come garante che siamo inloggad correttamente prima di accedere alle api del backend.
     // questo token verra' "verified" e fatto il payload nel backend, in modo da ottenere l'email
     // e poter fare l'ash di questa per multitenat rag app (boto 3, namespaces)
@@ -52,53 +119,63 @@ export default function UploadSection() {
       }
 
       const data = await response.json();
-      console.log(data.message);
-      setMessage(
-        "Processing PDF, please wait..." /*data.message || "Upload completed"*/,
-      );
+      console.log(data.message); // il pdf e' stato caricato su s3 e pronto per chunking.
+      // quindi possiamo avviare il useEffect che fa' polling sul chunking/pinecone status
+      setLoading(true); // qua parte lo use'effect
+      // setMessage(
+      //   "Processing PDF, please wait..." /*data.message || "Upload completed"*/,
+      // );
+      setLoading(true); // qua parte lo use'effect
     } catch (error) {
       // error generale se il server crasha, o se e' spento
       setMessage("Error uploading file");
+      setLoading(false);
     }
 
     // CHECK THE STATUS OF THE INGESTION, AND SEND THE USER TO "CHAT" PAGE ONCE INGESTION AND S3/PINECONE PDF DATA STORAGE
-    let attempts = 0;
-    const MAX_ATTEMPTS = 180; // 5 min  //60; // 2 minuti
+    // let attempts = 0;
+    // const MAX_ATTEMPTS = 180; // 5 min  //60; // 2 minuti
 
-    const checkStatus = async () => {
-      // Metti un limite massimo di tentativi, altrimenti se qualcosa va storto polli per sempre.
-      if (attempts >= MAX_ATTEMPTS) {
-        alert("Processing timeout");
-        return;
-      }
-      attempts++;
-      // here starts the status polling
-      try {
-        console.log("ingestion_status");
-        const res = await fetch("http://localhost:8000/ingestion_status", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+    // const checkStatus = async () => {
+    //   // polling function per vedere pdf status. Viene chiamata ogni 2 sec
+    //   // Metti un limite massimo di tentativi, altrimenti se qualcosa va storto polli per sempre.
+    //   if (attempts >= MAX_ATTEMPTS) {
+    //     alert("Processing timeout");
+    //     return;
+    //   }
+    //   attempts++;
+    //   // here starts the status polling
+    //   try {
+    //     const res = await fetch("http://localhost:8000/ingestion_status", {
+    //       headers: { Authorization: `Bearer ${token}` },
+    //     });
 
-        const ingest_status_data = await res.json();
-        console.log("ingest_status_data.status =", ingest_status_data.status);
+    //     const ingest_status_data = await res.json();
 
-        if (ingest_status_data.status === "ready") {
-          router.push("/questions");
-        } else if (ingest_status_data.status === "processing") {
-          // setMessage( "Processing PDF, please wait..." /*data.message || "Upload completed"*);
-          setTimeout(checkStatus, 2000); // check the status of the pdf ingestion until it is ingested
-          // and stored in s3 and pinecone
-        } else if (ingest_status_data.status === "error") {
-          alert("Error in pdf ingestion, refresh the page and retry please"); //
-        } else {
-          setTimeout(checkStatus, 2000); // fallback
-        }
-      } catch (error) {
-        alert(`server may down, error = ${error}`);
-      }
-    };
-    checkStatus(); // start status polling
+    //     if (ingest_status_data.status === "ready") {
+    //       router.push("/questions");
+    //     } else if (ingest_status_data.status === "processing") {
+    //       setMessage(
+    //         `Processing PDF, please wait${" .".repeat((attempts % 3) + 1)}`,
+    //       );
+    //       // const chose_mg = attempts % 3;
+    //       // setMessage(Iter_message[chose_mg]);
+    //       setTimeout(checkStatus, 2000); // check the status of the pdf ingestion until it is ingested
+    //       // and stored in s3 and pinecone
+    //     } else if (ingest_status_data.status === "error") {
+    //       setMessage("");
+    //       alert("Error in pdf ingestion, refresh the page and retry please"); //
+    //     } else {
+    //       setTimeout(checkStatus, 2000); // fallback
+    //     }
+    //   } catch (error) {
+    //     alert(`server may down, error = ${error}`);
+    //     setMessage("");
+    //   }
+    // };
+    // checkStatus(); // start status polling
   };
+
   return (
     <div className={styles.page}>
       <div className={styles.card}>

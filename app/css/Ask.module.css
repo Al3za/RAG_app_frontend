@@ -73,3 +73,44 @@
   white-space: pre-wrap;
   line-height: 1.5;
 }
+
+.loading {
+  margin-top: 1rem;
+  padding: 1rem 1.2rem;
+  background: #eef2ff; /* leggero blu */
+  border-radius: 12px;
+  border: 1px solid #c7d2fe; /* bordo blu soft */
+  font-weight: 500; /* più leggibile */
+  color: #1e3a8a; /* blu scuro */
+}
+/* .loading {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f3f4f6;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  font-style: italic;
+  color: #6b7280;
+} */
+
+.buttonDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dots::after {
+  content: "...";
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}

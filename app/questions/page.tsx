@@ -11,6 +11,8 @@ import styles from "../css/Ask.module.css";
 
 export default function QuestionPage() {
   const [allowed, setAllowed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [dotCount, setDotCount] = useState(0);
   const [message, setMessage] = useState("");
   const [question, setQuestion] = useState("");
   const { data: session, status } = useSession(); // asyncron Google function. When lo stato e' attivo
@@ -28,6 +30,7 @@ export default function QuestionPage() {
       return; // UseEffect viene chiamato dopo che la pagina e' stata renderizzata, ed e meglio fare eventuali
       // route changes tra pagine dopo che avviene la renderizzazione della pagina (appunto dentro useEffect)
     }
+
     const checkStatus = async () => {
       const token = session?.backendAccessToken || "";
 
@@ -54,6 +57,19 @@ export default function QuestionPage() {
   // in questo file, allora si avvia useEffect e' vede se l'utente e loggato in e se il pdf e' stato ingerito
   // prima di ancare avanto con Il questionPage file e poter interagire con LLM
 
+  useEffect(() => {
+    // useEffect per fare il messaggio 'await for response...' iterattivo, mostrando i puntini ogni tot sec
+    if (!loading) return;
+
+    const interval = setInterval(() => {
+      setDotCount((prev) => (prev + 1) % 6); // Aggiunge i puntini ad ogni secondo alla frase
+      // 'await for response..'
+      // 0 → 1 → 2 → 3 → 0
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [loading]); // Starts quando loading cambia state
+
   if (!allowed) {
     // if pdf_ingest_status != 'ready'
     return <div>Checking document status... </div>;
@@ -61,9 +77,13 @@ export default function QuestionPage() {
 
   const handle_LLM_response = async () => {
     // const email = session?.user?.email || "";
+    if (!question) return /*<div> Write a valid question please</div>*/;
     const token = session?.backendAccessToken || ""; // custom backend token (per il nostro backend)
     // console.log("question here = ", question);
+    // setAwaitLLMRes(false);
     try {
+      setLoading(true);
+      setMessage(""); // puliamo messages precedenti
       const response = await fetch("http://localhost:8000/chat", {
         method: "POST",
         body: JSON.stringify({
@@ -79,10 +99,18 @@ export default function QuestionPage() {
 
       const data = await response.json();
       setMessage(data.answer || "transfere completed");
+      // setAwaitLLMRes(true);
     } catch (error) {
-      setMessage("Error message ");
+      setMessage("Error message, Please refresh and try again ");
+    } finally {
+      setLoading(false);
     }
   };
+
+  // if (!awaitLLMRes) {
+  //   return <div> Wait for response </div>;
+  // }
+
   return (
     <div className={styles.page}>
       <div className={styles.card}>
@@ -94,12 +122,16 @@ export default function QuestionPage() {
           onChange={(e) => setQuestion(e.target.value)}
         />
 
+        {/* SOLO BOTTONI QUI DENTRO */}
         <div className={styles.buttonsRow}>
           <button
-            className={styles.buttonPrimary}
+            className={`${styles.buttonPrimary} ${
+              loading ? styles.buttonDisabled : ""
+            }`}
             onClick={handle_LLM_response}
+            disabled={loading}
           >
-            Send Question
+            {loading ? "Waiting" : "Send Question"}
           </button>
 
           <button className={styles.buttonSecondary} onClick={() => signOut()}>
@@ -107,7 +139,17 @@ export default function QuestionPage() {
           </button>
         </div>
 
-        {message && <div className={styles.responseBox}>{message}</div>}
+        {/* FUORI DAI BOTTONI */}
+        {loading && (
+          <div className={styles.loading}>
+            Waiting for response{" .".repeat(dotCount)}{" "}
+            {/* <span className={styles.dots}></span> */}
+          </div>
+        )}
+
+        {!loading && message && (
+          <div className={styles.responseBox}>{message}</div>
+        )}
       </div>
     </div>
   );
