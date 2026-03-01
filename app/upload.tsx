@@ -15,6 +15,8 @@ export default function UploadSection() {
   const email = session?.user?.email || ""; // serve al fronten per "Hallo akekacabro@gmail.com". (Al backend bisogna inviare solo il token
   // per ottenere l'email dopo encoding)
   const token = session?.backendAccessToken || "";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL; // non avere questa env in .env locale per testare
+  // in dev mode. Ma devi averla in .env su render per poter lavorare su render
 
   // useEffect parte solo dopo che la pagina e' stata renderizzata e quando cambia 'loading'.
   useEffect(() => {
@@ -38,9 +40,14 @@ export default function UploadSection() {
 
       try {
         // polling to check the status of the ingestion
-        const res = await fetch("http://localhost:8000/ingestion_status", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          API_URL
+            ? `${API_URL}/ingestion_status` //  // for render
+            : "http://localhost:8000/ingestion_status",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         const data = await res.json();
 
         if (data.status === "ready") {
@@ -98,7 +105,9 @@ export default function UploadSection() {
     // i body di testo con json stringfy
     try {
       const response = await fetch(
-        "http://localhost:8000/upload_pdf", // local
+        API_URL
+          ? `${API_URL}/upload_pdf` // for render
+          : "http://localhost:8000/upload_pdf", // local
         // "https://rag-app-2s6e.onrender.com/upload_pdf",
         {
           method: "POST",

@@ -12,7 +12,7 @@ export default function QuestionPage() {
   const token = session?.backendAccessToken || "";
 
   const handle_LLM_response = async () => {
-    console.log("question here = ", question);
+    // console.log("question here = ", question);
     try {
       const response = await fetch("http://localhost:8000/chat", {
         method: "POST",
