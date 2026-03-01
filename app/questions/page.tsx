@@ -18,6 +18,7 @@ export default function QuestionPage() {
   const { data: session, status } = useSession(); // asyncron Google function. When lo stato e' attivo
   // verra si attiva lo useState
   const router = useRouter();
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   // se un utente cerca di andare su questa route prima che il pdf sia stato 'ingerito', lo rimandiamo indietro
   // su upload page
@@ -35,9 +36,14 @@ export default function QuestionPage() {
       const token = session?.backendAccessToken || "";
 
       try {
-        const res = await fetch("http://localhost:8000/ingestion_status", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          API_URL
+            ? `${API_URL}/ingestion_status` // for render
+            : "http://localhost:8000/ingestion_status",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
 
         const ingest_status_data = await res.json();
 
@@ -84,18 +90,23 @@ export default function QuestionPage() {
     try {
       setLoading(true);
       setMessage(""); // puliamo messages precedenti
-      const response = await fetch("http://localhost:8000/chat", {
-        method: "POST",
-        body: JSON.stringify({
-          question: question,
-        }),
-        headers: {
-          // il browser attiva automaticamente una CORS preflight request. (Quindi devi abilitare coors al backend)
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Token deve essere in string type, non object ({email:.., name:...) per
-          // essere validata dal nostro backend
+      const response = await fetch(
+        API_URL
+          ? `${API_URL}/chat` // for render
+          : "http://localhost:8000/chat",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            question: question,
+          }),
+          headers: {
+            // il browser attiva automaticamente una CORS preflight request. (Quindi devi abilitare coors al backend)
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Token deve essere in string type, non object ({email:.., name:...) per
+            // essere validata dal nostro backend
+          },
         },
-      });
+      );
 
       const data = await response.json();
       setMessage(data.answer || "transfere completed");
