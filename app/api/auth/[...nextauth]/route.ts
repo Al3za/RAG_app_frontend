@@ -32,7 +32,9 @@
 
 // Google richiama l’endpoint della tua Next.js app:
 // http://localhost:3000/api/auth/callback/google (che definiamo quando creiamo OAuth in GCP)
-// (quando fai l'host su render devi handare su gcp e dare questo url: https://rag-app-frontend-2ose.onrender.com)
+// (quando fai l'host su render devi andare su gcp e dare questo url: (render frontend app url)/api/auth/callback/google)
+// e anche Authorized JavaScript origins:http://localhost:3000 e lo url render frontend app
+// Queste e' stato gia' fatto, e funziona in locale e su render
 
 // ⚠️ api/auth/callback/google è un endpoint di default Next.js, NON FastAPI.
 // NextAuth gestisce tutto internamente: riceve il callback, scambia il code per token, genera JWT lato frontend.
