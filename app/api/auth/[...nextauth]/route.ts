@@ -1,5 +1,6 @@
 // 4️⃣ Configurazione NextAuth.
-// api/auth/[...nextauth]/route.ts è un custom endpoint server di NextAuth
+
+// api/auth/[...nextauth]/route.ts è un custom endpoint server apposito di NextAuth
 
 //1) app/api/... → crea API route lato server. Non è frontend, È codice che gira solo sul server (quindi e' sicuro creare jwt token qui)
 
@@ -30,16 +31,17 @@
 // NextAuth apre Google OAuth → l’utente login → autorizza.
 
 // Google richiama l’endpoint della tua Next.js app:
+// http://localhost:3000/api/auth/callback/google (che definiamo quando creiamo OAuth in GCP)
+// (quando fai l'host su render devi andare su gcp e dare questo url: (render frontend app url)/api/auth/callback/google)
+// e anche Authorized JavaScript origins:http://localhost:3000 e lo url render frontend app
+// Queste e' stato gia' fatto, e funziona in locale e su render
 
-// http://localhost:3000/api/auth/callback/google
-// (quando fai l'host su render devi handare su gcp e dare questo url: https://rag-app-frontend-2ose.onrender.com)
-
-// ⚠️ Questo è un endpoint Next.js, NON FastAPI.
+// ⚠️ api/auth/callback/google è un endpoint di default Next.js, NON FastAPI.
 // NextAuth gestisce tutto internamente: riceve il callback, scambia il code per token, genera JWT lato frontend.
 
-// Dopo il callback, NextAuth salva la session nel browser (cookie o JWT).
+// Dopo il callback, NextAuth salva la session(auth/session) nel browser (cookie o JWT).
 
-// Quando chiami il tuo backend FastAPI (/upload_pdf, /chat), invii il token JWT di NextAuth (dal cookie o header Authorization).
+// Quando chiami il tuo backend FastAPI (/upload_pdf, /chat), invii il token JWT di NextAuth (dal cookie o header Authorization in questo caso).
 
 import NextAuth from "next-auth"; //lato server (non nel browser!),
 // import { encode } from "next-auth/jwt";

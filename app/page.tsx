@@ -4,7 +4,7 @@
 import { useSession, signIn } from "next-auth/react";
 import AuthLogin from "./login/auth_login";
 import UploadSection from "./upload";
-// import Test_email_jwt from "./teste_jwt";
+import Test_email_jwt from "./teste_jwt";
 // import QuestionPage from "./chat";
 
 export default function Home() {
@@ -23,10 +23,8 @@ export default function Home() {
   // const token = session.user;
 
   return (
-    <div>
-      <h1>hallo world</h1>
-    </div>
-  ); // <UploadSection />;
-  // return <Test_email_jwt />;
-  // return <QuestionPage />;
+    <UploadSection />
+    // <Test_email_jwt />
+    // return <QuestionPage />;
+  );
 }
