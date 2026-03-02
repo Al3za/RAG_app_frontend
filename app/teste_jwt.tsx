@@ -10,19 +10,25 @@ export default function Test_email_jwt() {
 
   const handleTestJwt = async () => {
     //
-
+    console.log("render hit");
     try {
-      const response = await fetch("http://localhost:8000/jwt_test", {
-        method: "GET",
-        headers: {
-          // il browser attiva automaticamente una CORS preflight request. (Quindi devi abilitare coors al backend)
-          Authorization: `Bearer ${token}`, // Token deve essere in string type, non object ({email:.., name:...) per
-          // essere validata dal nostro backend
+      const response = await fetch(
+        "https://rag-app-2s6e.onrender.com/redis_test",
+        /*"http://localhost:8000/jwt_test",*/ {
+          method: "GET",
+          headers: {
+            // il browser attiva automaticamente una CORS preflight request. (Quindi devi abilitare coors al backend)
+            Authorization: `Bearer ${token}`, // Token deve essere in string type, non object ({email:.., name:...) per
+            // essere validata dal nostro backend
+          },
         },
-      });
+      );
 
       const data = await response.json();
-      setMessage(data.message || "transfere completed");
+      console.log(data.value, "here value");
+      console.log("data here", data);
+      // setMessage(data.message || "transfere completed");
+      setMessage(data.value || "value value");
     } catch (error) {
       setMessage("Error message ");
     }

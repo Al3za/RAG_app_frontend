@@ -82,6 +82,7 @@ export default function QuestionPage() {
   }
 
   const handle_LLM_response = async () => {
+    console.log("API_URL from render here", API_URL);
     // const email = session?.user?.email || "";
     if (!question) return /*<div> Write a valid question please</div>*/;
     const token = session?.backendAccessToken || ""; // custom backend token (per il nostro backend)
