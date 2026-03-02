@@ -22,7 +22,11 @@ export default function Home() {
 
   // const token = session.user;
 
-  return <UploadSection />;
+  return (
+    <div>
+      <h1>hallo world</h1>
+    </div>
+  ); // <UploadSection />;
   // return <Test_email_jwt />;
   // return <QuestionPage />;
 }
