@@ -14,7 +14,8 @@ export default function Test_email_jwt() {
     try {
       const response = await fetch(
         "https://rag-app-2s6e.onrender.com/redis_test",
-        /*"http://localhost:8000/jwt_test",*/ {
+        // "http://localhost:3000/api/healt", for ping by uptime robot (mvp only)
+        {
           method: "GET",
           headers: {
             // il browser attiva automaticamente una CORS preflight request. (Quindi devi abilitare coors al backend)

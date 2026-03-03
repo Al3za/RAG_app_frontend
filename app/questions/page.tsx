@@ -5,9 +5,6 @@ import { useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import styles from "../css/Ask.module.css";
-// import styles from "./css/Ask.module.css";
-// import styles from "./Ask.module.css";
-// import { json } from "stream/consumers";
 
 export default function QuestionPage() {
   const [allowed, setAllowed] = useState(false);

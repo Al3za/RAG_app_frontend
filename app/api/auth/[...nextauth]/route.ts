@@ -43,6 +43,14 @@
 
 // Quando chiami il tuo backend FastAPI (/upload_pdf, /chat), invii il token JWT di NextAuth (dal cookie o header Authorization in questo caso).
 
+// Ps, ricordati che quando deploy su render(o altro), di inserire la var NEXTAUTH_URL=(frontend render) sulle .env var di render(o altro)
+// perche nextAuth attinge in automatico dalla variabile d'abiente di default(appunto NEXTAUTH_URL), e
+// quindi li' ci deve essere la base url, che deve essere l'url della nostra app (url render frontend). Non dobbiamo
+// invocarla nel code (tipo baseUrl = process.env.NEXTAUTH_URL), ma dobbiamo solo inserirla nell'.env var
+// dove hostiamo l'app(in questo caso render).
+// nextAuth usa NEXTAUTH_URL come base url per fare operazioni tipo :
+// OAuth redirect, Cookie/session in production, firmare cookie correttamente ... e senza questa variabile abbiamo un error
+
 import NextAuth from "next-auth"; //lato server (non nel browser!),
 // import { encode } from "next-auth/jwt";
 import GoogleProvider from "next-auth/providers/google";
