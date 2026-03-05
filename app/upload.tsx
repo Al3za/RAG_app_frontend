@@ -26,7 +26,7 @@ export default function UploadSection() {
     if (!loading) return;
 
     let attempts = 0;
-    const MAX_ATTEMPTS = 180; // 5 min  //60; // 2 minuti
+    const MAX_ATTEMPTS = 360; // 12 min di attesa per l'ingestion, in caso il PDF sia grande  //60; // 2 minuti
 
     const ingestion_status_interval = setInterval(async () => {
       console.log("attempts here =", attempts);
@@ -43,7 +43,7 @@ export default function UploadSection() {
         const res = await fetch(
           API_URL
             ? `${API_URL}/ingestion_status` //  // for render
-            : "http://localhost:8000/ingestion_status",
+            : "http://localhost:8000/ingestion_status", // for local dev
           {
             headers: { Authorization: `Bearer ${token}` },
           },
