@@ -82,13 +82,6 @@ export default function UploadSection() {
   }, [loading]); // il loop parte quando loading state cambia (true/false)
 
   const handleUpload = async () => {
-    // const Iter_message = [
-    //   // iterative message for the user once he upload pdf
-    //   "Processing PDF, please wait .",
-    //   "Processing PDF, please wait ..",
-    //   "Processing PDF, please wait ...",
-    // ];
-
     if (!file) return alert("Choose a valid pdf file");
     // const router = useRouter(); // questo e' un react hook. puo essere chiamato solo dentro il corpo del componente madre, e mai dentro
     // funzioni normali, if statement, loop...
@@ -124,6 +117,7 @@ export default function UploadSection() {
       if (!response.ok) {
         const errorData = await response.json();
         alert(errorData.detail); // error del backend (> 50 pages di pdf)
+        setMessage("");
         return;
       }
 
@@ -140,49 +134,6 @@ export default function UploadSection() {
       setMessage("Error uploading file");
       setLoading(false);
     }
-
-    // CHECK THE STATUS OF THE INGESTION, AND SEND THE USER TO "CHAT" PAGE ONCE INGESTION AND S3/PINECONE PDF DATA STORAGE
-    // let attempts = 0;
-    // const MAX_ATTEMPTS = 180; // 5 min  //60; // 2 minuti
-
-    // const checkStatus = async () => {
-    //   // polling function per vedere pdf status. Viene chiamata ogni 2 sec
-    //   // Metti un limite massimo di tentativi, altrimenti se qualcosa va storto polli per sempre.
-    //   if (attempts >= MAX_ATTEMPTS) {
-    //     alert("Processing timeout");
-    //     return;
-    //   }
-    //   attempts++;
-    //   // here starts the status polling
-    //   try {
-    //     const res = await fetch("http://localhost:8000/ingestion_status", {
-    //       headers: { Authorization: `Bearer ${token}` },
-    //     });
-
-    //     const ingest_status_data = await res.json();
-
-    //     if (ingest_status_data.status === "ready") {
-    //       router.push("/questions");
-    //     } else if (ingest_status_data.status === "processing") {
-    //       setMessage(
-    //         `Processing PDF, please wait${" .".repeat((attempts % 3) + 1)}`,
-    //       );
-    //       // const chose_mg = attempts % 3;
-    //       // setMessage(Iter_message[chose_mg]);
-    //       setTimeout(checkStatus, 2000); // check the status of the pdf ingestion until it is ingested
-    //       // and stored in s3 and pinecone
-    //     } else if (ingest_status_data.status === "error") {
-    //       setMessage("");
-    //       alert("Error in pdf ingestion, refresh the page and retry please"); //
-    //     } else {
-    //       setTimeout(checkStatus, 2000); // fallback
-    //     }
-    //   } catch (error) {
-    //     alert(`server may down, error = ${error}`);
-    //     setMessage("");
-    //   }
-    // };
-    // checkStatus(); // start status polling
   };
 
   return (
@@ -213,36 +164,4 @@ export default function UploadSection() {
       </div>
     </div>
   );
-
-  // return (
-  //   <div className="p-10 space-y-4">
-  //     <h2>Welcome {email}</h2>
-
-  //     <input
-  //       type="file"
-  //       accept=".pdf"
-  //       onChange={(e) => {
-  //         if (e.target.files) {
-  //           setFile(e.target.files[0]);
-  //         }
-  //       }}
-  //     />
-
-  //     <button
-  //       className="bg-blue-500 text-white px-4 py-2"
-  //       onClick={handleUpload}
-  //     >
-  //       Upload PDF
-  //     </button>
-
-  //     <button
-  //       className="bg-gray-500 text-white px-4 py-2"
-  //       onClick={() => signOut()}
-  //     >
-  //       Logout
-  //     </button>
-
-  //     {message && <p>{message}</p>}
-  //   </div>
-  // );
 }
