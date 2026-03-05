@@ -25,8 +25,8 @@ export default function UploadSection() {
     // Nessun rischio di loop infinito nascosto
     if (!loading) return;
 
-    let attempts = 0;
-    const MAX_ATTEMPTS = 360; // 12 min di attesa per l'ingestion, in caso il PDF sia grande  //60; // 2 minuti
+    let attempts = 0; // add one every 2 sec
+    const MAX_ATTEMPTS = 360; // 12 min di attesa per l'ingestion, in caso il PDF sia grande
 
     const ingestion_status_interval = setInterval(async () => {
       console.log("attempts here =", attempts);
