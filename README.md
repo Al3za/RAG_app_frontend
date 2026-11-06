@@ -90,9 +90,7 @@ Build RAG_app_frontend from the source and install dependencies:
 
 ### Usage
 
-Run the project with:
-
-**Using [npm](https://www.npmjs.com/):**
+Run the project **Using [npm](https://www.npmjs.com/):**
 
 ```sh
 npm run start (or nmp run dev for development)
