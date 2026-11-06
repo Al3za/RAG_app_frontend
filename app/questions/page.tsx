@@ -163,30 +163,3 @@ export default function QuestionPage() {
     </div>
   );
 }
-// return (
-//   <div className="p-10 space-y-4">
-//     <h2>Welcome till Chat page {/*{email}*/} </h2>
-//     <input
-//       type="text"
-//       value={question}
-//       onChange={(e) => {
-//         setQuestion(e.target.value);
-//       }}
-//     />
-//     <button
-//       className="bg-blue-500 text-white px-4 py-2"
-//       onClick={handle_LLM_response}
-//     >
-//       send question
-//     </button>
-//     <button
-//       className="bg-gray-500 text-white px-4 py-2"
-//       onClick={() => signOut()}
-//     >
-//       Logout
-//     </button>
-//     {message && <p>{message}</p>}
-//     {/* {question} */}
-//   </div>
-// );
-// }

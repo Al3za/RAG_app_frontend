@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+app/api/auth/\[...nextauth\]/route_explanation.ts
+app/types/next-auth-descriptions.md
